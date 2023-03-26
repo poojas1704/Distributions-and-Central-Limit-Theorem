@@ -1,0 +1,180 @@
+---
+title: "PS4"
+author: "Pooja Sadarangani"
+date: "2022-11-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#1. Compare differently distributed data
+
+## 1.1 Human Bodies
+
+### 1. You’ll work about human heights. What kind of measure is this? (nominal, ordered, difference, ratio)? How should it be measured (continuous, discrete, positive...)?
+
+### Ans. Human height is a ratio measure as this is a numerical quantity that has a well-defined zero. It can comput difference as well as ratio. For instance, we can say that A is twice as tall as B after looking at their heights. 
+### Human height is measured as positive and continuous.
+
+
+### 2. Load the fatherson.csvDownload fatherson.csv data. It contains two columns, father’s height and son’s height (in cm). Let’s focus on fathers here (variable fheight) and ignore the sons. Provide the basic descriptives: how many observations do we have? Do we have any missings? Any unreasonable values?
+
+
+```{r}
+setwd("/Users/poojasadarangani/Pooja/UW College Work/IMT 573")
+```
+```{r}
+fatherson <- read.delim("fatherson.csv.bz2")
+names(fatherson)
+head(fatherson)
+cat("The number of observations are:", nrow(fatherson))
+#any(is.na(fatherson$fheight) == "TRUE")
+print(" There are no missing values")
+#view(fatherson$fheight)
+print("There are no unreasonable values")
+```
+
+### 3. Compute mean, median, standard deviation and range of the heights. Discuss the relationship between these numbers. Is mean larger than median? By how much (in relative terms)? How does standard deviation compare to mean?
+
+```{r}
+library(dplyr) 
+library(modeest)
+#fheight <- select(fatherson, fheight)
+#head(fheight)
+#summarise(fatherson, mean(fheight))
+
+#getmode <- function(x){
+ # uniquevalues <- unique(x)
+  #uniquevalues[which.max(tabulate(match(x, uniquevalues)))]
+#}
+
+cat("The mean is: ", mean(fatherson$fheight))
+cat("The median is: ", median(fatherson$fheight))
+#cat("The mode is: ", getmode(fatherson$fheight))
+cat("The mode is: ", modeest::mlv(fatherson$fheight, method="mfv"))
+```
+### 4. Plot a histogram of the data. Add to this histogram mean and median. You can use vertical lines of different color along the lines. What did you find? Which distribution does the result resemble?
+
+```{r}
+library(ggplot2)
+ggplot(fatherson, aes(fatherson$fheight)) + 
+  geom_histogram(binwidth = 10) +
+  geom_vline(xintercept=median(fatherson$fheight), col="red") +
+  geom_vline(xintercept=mean(fatherson$fheight), col="green")
+
+
+#fatherson$fheight %>%
+ # geom_histogram(binwidth = 30, col="skyblue") +
+#  geom_vline(xintercept=median(fatherson$fheight), col="red") +
+#  geom_vline(xintercept=mean(fatherson$fheight), col="green")
+```
+
+### Ans: From the graph, we can tell that this is 
+
+## 1.2 Human influence
+
+### 1. What kind of measure is this? What kind of valid figures would you expect to see (continuous, discrete, positive, ...)
+
+### Ans: Paper id -> This variable would be nominal measure as the paper id's will not necessarity have ordered values. I expect to see discrete and positive values in this column.
+###      Number of times the paper has been cited -> This variable would be ratio as we can find the difference between values and define them as a ratio. I expect to see discrete and positive (and zero) values in this field. 
+
+
+### 2. Read the mag-in-citations.csvDownload mag-in-citations.csv data. Provide the basic descriptives: how many observations do we have? Do we have any missings? Do we have implausible or wrong values? What is the range of the citations?
+
+```{r}
+cite <- read.delim("mag-in-citations.csv.bz2", sep = ",")
+head(cite)
+cat("The number of observations are:", nrow(cite))
+#names(cite)
+#any(is.na(cite$paperID) =="TRUE")
+#any(is.na(cite$citations) =="TRUE")
+print(" There are no missing values in any of the columns")
+#view(cite)
+print("There are no unreasonable values in any of the columns")
+```
+
+### 3. Compute mean, median, mode (the most frequent value), standard deviation and range of the number of citations. Discuss the relationship between these numbers. Is mean larger than median? Than mode? By how much (in relative terms)? How does standard deviation compare to mean?
+
+```{r}
+library(modeest)
+cat("The mean is: ", mean(cite$citations))
+cat("The median is: ", median(cite$citations))
+cat("The mode is: ", modeest::mlv(cite$citations, method="mfv"))
+cat("The standard deviation is: ", sd(cite$citations))
+cat("The variance is: ", var(cite$citations))
+```
+### 4. Plot a histogram of the data. Add to this histogram mean, median, and mode. You can use vertical lines of different color. How does the histogram look like? Which distribution does it resemble? Can you get it to be a nice and easy to grasp image?
+
+```{r}
+library(ggplot2)
+ggplot(cite, aes(citations)) +  
+  geom_histogram(binwidth = 30)  +
+  geom_vline(xintercept=median(cite$citations), col="red") +
+  geom_vline(xintercept=mean(cite$citations), col="green") +
+  geom_vline(xintercept=modeest::mlv(cite$citations, method="mfv"), col="blue") +
+  xlim(-30,300)
+  
+```
+
+### Ans: The Histogram looks 
+
+### 4. Finally, comment on your findings about human bodies and influence.
+
+### Ans:
+
+# 2. Explore Central Limit Theorem
+
+## 1. Calculate the expected value and variance of this random variable.
+
+```{r}
+library(dplyr)
+value <- sample(c(-1,1), 10, replace = TRUE)
+uniqueval <- unique(value)
+ev = 0
+for(i in uniqueval){
+  ev = ev + (i/(length(uniqueval)))
+}
+probtable
+cat("The expected value should be", ev)
+cat("The mean is ", mean(value))
+
+var=0
+for(i in uniqueval){
+  prob=1/length(uniqueval);
+  var = var + (i-ev)^2*prob;
+}
+
+cat("The variance is: ",var)
+#var(value)
+```
+
+## 2. Choose your number of repetitions R. 1000 is a good number. Be clear the number of repetitions R is not the same as sample size S below!
+
+## 3. Create a vector of R random numbers as explained above. Make a histogram of those. Comment the shape of the histogram.
+
+```{r}
+rv <- sample(c(-1,1), 1000, replace = TRUE)
+
+rv %>% hist(breaks=30)
+```
+
+## Ans: Shape of the histogram is
+
+## 4. Compute and report mean and variance of the random numbers you created (just use mean and var functions). Compare these numbers with the theoretical values computed in question 1.
+
+```{r}
+cat("The mean is", mean(rv))
+cat("The variance is",var(rv))
+```
+## Ans: Mean is slightly greater than that of the sample created in question 1 and variance is slightly lesser than that of the sample created in question 1. However, the values for both is very close to the theoretical values computed in question 1.
+
+## 5. Now create R pairs of random numbers. For each pair, compute its mean. You should have R means. Make histogram of the means. How does this look like?
+
+```{r}
+pair = sample(c(-1,1), 2000, replace=TRUE)
+matrix_pair = matrix(pair,ncol = 2)
+mean_matrix = rowMeans(matrix_pair)
+hist(mean_matrix, col="skyblue")
+```
