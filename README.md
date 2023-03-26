@@ -1,1 +1,1 @@
-# Distributions-and-Central-Limit-Theorem
+# Distributions-and-Central-Limit-Theorem-and-t-test
