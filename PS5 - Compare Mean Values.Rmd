@@ -1,0 +1,186 @@
+---
+title: 'PS5: Compare Mean Values'
+author: "Pooja Sadarangani"
+date: "2022-11-12"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+# Collaborato: Pranali Oza
+
+# 1 Descriptive Analysis (20pt)
+
+## 1. (3pt) Load the data. Do the basic descriptive work on it: what is the number of observations? Are there any missings?
+
+```{r}
+fatherson <- read.delim("fatherson 2.csv.bz2")
+#names(fatherson)
+cat("The number of observations are:", nrow(fatherson))
+#any(is.na(fatherson) == TRUE)
+#view(fatherson)
+print("There are no missing values in the dataset")
+```
+
+## 2. (7pt) Describe fathers and sons: compute the mean, median, standard deviation, and range of their heights. According to these figures, who are taller: fathers or sons?
+
+```{r}
+print("Father's Description")
+cat("The mean of the fathers' height is:", mean(fatherson$fheight))
+cat("The median of the fathers' height is:", median(fatherson$fheight))
+cat("The standard deviation of the fathers' height is:", sd(fatherson$fheight))
+cat("The range of the fathers' height is:", range(fatherson$fheight))
+
+print("Son's Description")
+cat("The mean of the sons' height is:", mean(fatherson$sheight))
+cat("The median of the sons' height is:", median(fatherson$sheight))
+cat("The standard deviation of the sons' height is:", sd(fatherson$sheight))
+cat("The range of the sonss' height is:", range(fatherson$sheight))
+
+meandiff <- mean(fatherson$sheight) - mean(fatherson$fheight)
+```
+
+## Ans. According to the above figures, sons are taller than fathers
+
+## 3. (7pt) Lets add a graphical comparison. Create density plots of both heights on the same figure. Comment the density plots. Which distribution do these resemble? Do they agree with the conclusion above that sons are taller?
+
+```{r}
+library(ggplot2)
+ggplot(fatherson) +
+  geom_density(aes(fheight,stat="density", fill="skyblue", alpha=0.5)) +
+  geom_density(aes(sheight, stat="density", fill="pink", alpha=0.5)) +
+  labs(x="height", fill="height") +
+  scale_fill_discrete(name="height", labels=c("sheight","fheight"))
+```
+
+## Ans. These distributions resemble normal distribution.But the mean of the sonss' heights is greater than that of the fathers' heights. Thus, they agree with the above conclusion that sons are taller than fathers.
+
+## 4. (3pt) Finally, for the further reference, compute how much taller are sons on average.
+
+```{r}
+cat("Sons are taller than fathers by", meandiff, "on an average")
+```
+
+# 2 Simulations 
+
+## 1. (5pt) Compute the overall mean and standard deviation of pooled fathers’ and sons’ heights. (That is, combine all heights, and compute just one mean and one standard deviation for this combined 2156 heights.)
+
+```{r}
+heights <- NULL
+heights <- cbind(heights, fatherson$fheight)
+for(i in fatherson$sheight){
+heights <- rbind(heights, i)
+}
+heights <- as.numeric(heights)
+cat("The mean of the pooled fathers' and sons' height is: ", mean(heights))
+cat("The standard deviation of the pooled fathers' and sons' height is: ", sd(heights))
+```
+
+## 2. (5pt) Now create two sets of random normals, both with the same mean and the same standard deviation that you just computed above. Call one of these “fake fathers” and the others “fake sons”. What is the fake father-fake son mean difference? Compare the result with that you found in the previous problem.
+
+```{r}
+fakefathers <- rnorm(nrow(fatherson), mean=173.1912, sd=7.173111)
+#print(fakefathers)
+
+fakesons <- rnorm(nrow(fatherson), mean=173.1912, sd=7.173111)
+#print(fakesons)
+
+diff1 <- mean(fakefathers) - mean(fakesons)
+cat("The fake father-fake son mean difference is:", diff1)
+```
+
+## The result is much lesser than that found previously which was 2.532. It is also much closer to zero.
+
+## 3. (8pt) Now repeat the previous question a large number of times R (1000 or more). Each time store the difference, so you end up with R different values for the difference.
+
+```{r}
+diff <- NULL
+for (i in 1:1000){
+fakefathers <- rnorm(nrow(fatherson), mean=173.1912, sd=7.173111)
+#print(fakefathers)
+
+fakesons <- rnorm(nrow(fatherson), mean=173.1912, sd=7.173111)
+#print(fakesons)
+
+diff[i] <- mean(fakefathers) - mean(fakesons)
+}
+
+#diff
+mean(diff)
+```
+
+## 4. (2pt) What is the mean of the differences? Explain why do you get what you get.
+
+```{r}
+cat("The mean of the difference is: ", mean(diff))
+```
+
+## Ans. From question 2.2, we can see that the difference in the mean is very close to zero. We get the above result because the data for fake fathers and fake sons has been created normally using same mean and standard deviation. 
+
+## 5. (2pt) What is the standard deviation of the differences?
+
+```{r}
+cat("The standard deviation of the differences is ", sd(diff))
+```
+
+## 6. (2pt) What is the largest difference you got (in absolute value)? How does it compare to the actual sons/fathers difference of 2.5?
+
+```{r}
+cat("The largest difference that I got is: ", max(abs(diff)))
+```
+
+## Ans. It is lesser than the actual sons' and fathers' height's mean difference
+
+## 7. (8pt) find 95% confidence intervals for the differences you computed. Does the actual difference fall inside or outside of the CI?
+
+```{r}
+quantile(diff, c(0,.025,0.975))
+```
+
+## Ans. The actual difference falls outside of the CI
+
+## 8. (8pt) What is your conclusion? Can you confidently say that sons are taller than fathers? Why?
+
+## Ans. From the above result, we can reject the null hypothesis (H0) i.e son's and father's heights are the same, because the actual difference falls outside the CI. After comparing the means of the fathers' and sons' heights', we can conclude that sons are taller than the fathers.
+
+# 3 t-test 
+
+## 1. (5pt) Compute the standard error for the difference of means.
+
+```{r}
+# Find standardized difference in mean
+sdiff <-sqrt(var(fatherson$fheight)/1000 + var(fatherson$sheight)/1000)
+cat("The standard error for the difference of means is: ", sdiff)
+```
+
+##  Compute the t-value (OIS denotes it by T). Here we ask to compute it yourself, not use any pre-existing t-test functions! What is the t-value you find?
+
+```{r}
+#normalized by the standardized mean to compute test statistic (t statistic)
+tval1 <- (0-meandiff)/sdiff
+cat("The t-value is: ", tval1)
+```
+
+## Look up the t-distribution table (there is one in OIS appendices, and a web search can find you a ton of those tables). What is the likelihood that such a t-value happens just by random chance?
+
+The t-value is very large (around 8). This means that there is a large difference between the two samples. Since we have a large sample size, the likelihood of getting such a large t-value is very low.
+
+## 4. (5pt) Finally, state clearly your conclusion. Is the actual difference you see compatible with H0 that fathers and sons are of similar height?
+
+## In conclusion, the actual difference that we see i.e 2.532 is not compatible with H0 that fathers and sons are of similar heights.
+
+# 4 Canned t-test software
+
+## 1. (6 pt) Use t.test function to compare fathers and sons.
+```{r}
+tval2 <- t.test(fatherson$fheight,fatherson$sheight)
+cat("By using the t.test function, we get the t-value as: ") 
+tval2
+```
+
+## 2. (4 pt) Do all three methods agree whether sons are taller than fathers?
+
+## Ans. Yes, all three methods agree that the sons are taller than the fathers.
